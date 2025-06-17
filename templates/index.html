@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background:
+                linear-gradient(120deg, rgba(10,20,40,0.95) 0%, rgba(30,30,60,0.9) 100%),
+                url('/static/bgimg.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            color: #FFD700;
+            position: relative;
+            overflow: hidden;
+            cursor: none; /* Hide default cursor */
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: linear-gradient(270deg, #00ffd033, #FFD70033, #00ffd033);
+            background-size: 600% 600%;
+            animation: gradientBG 16s ease-in-out infinite;
+        }
+        @keyframes gradientBG {
+            0% {background-position:0% 50%}
+            50% {background-position:100% 50%}
+            100% {background-position:0% 50%}
+        }
+        .container {
+            max-width: 500px;
+            margin: 60px auto 0 auto;
+            background: rgba(20, 24, 40, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
+            padding: 32px 28px 28px 28px;
+            position: relative;
+            z-index: 1;
+        }
+        h2 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px #000a;
+        }
+        label {
+            color: #00ffd0;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: block;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 18px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        input {
+            background: #23284a;
+            color: #FFD700;
+            border: 1.5px solid #00ffd0;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input:focus {
+            border: 1.5px solid #FFD700;
+            background: #23284aee;
+        }
+        button {
+            background: linear-gradient(90deg, #00ffd0 0%, #FFD700 100%);
+            color: #181818;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px #FFD70044;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #FFD700 0%, #00ffd0 100%);
+            color: #23284a;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+            text-shadow: 0 2px 8px #000a;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10,20,40,0.92);
+            color: #FFD700;
+            font-size: 2em;
+            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            letter-spacing: 2px;
+        }
+        .overlay.active {
+            display: flex;
+        }
+        /* Custom cursor styles */
+        .custom-cursor {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            background: radial-gradient(circle at 30% 30%, #FFD700ee 60%, #00ffd088 100%, transparent 120%);
+            box-shadow: 0 0 24px 8px #FFD70066, 0 0 40px 20px #00ffd033;
+            mix-blend-mode: lighten;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+            will-change: transform;
+        }
+        .custom-cursor.active {
+            background: radial-gradient(circle at 30% 30%, #fff700ee 80%, #00ffd0cc 100%, transparent 120%);
+            box-shadow: 0 0 40px 16px #FFD700cc, 0 0 80px 40px #00ffd088;
+            transform: scale(1.3);
+        }
+        .custom-cursor.click {
+            background: radial-gradient(circle at 30% 30%, #FFD700ff 90%, #00ffd0ff 100%, transparent 120%);
+            box-shadow: 0 0 60px 24px #FFD700ff, 0 0 100px 60px #00ffd0cc;
+            transform: scale(1.5);
+            transition: background 0.1s, box-shadow 0.1s, transform 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Fraud Detection</h2>
+        <form id="fraudForm">
+            <label for="type">Transaction Type (e.g., 1 for CASH_OUT):</label>
+            <input type="number" id="type" name="type" required>
+
+            <label for="amount">Amount:</label>
+            <input type="number" step="0.01" id="amount" name="amount" required>
+
+            <label for="oldbalanceOrg">Old Balance (Origin):</label>
+            <input type="number" id="oldbalanceOrg" step="0.01" name="oldbalanceOrg" required>
+
+            <label for="newbalanceOrig">New Balance (Origin):</label>
+            <input type="number" id="newbalanceOrig" step="0.01" name="newbalanceOrig" required>
+
+            <label for="newbalanceDest">New Balance (Destination):</label>
+            <input type="number" id="newbalanceDest" step="0.01" name="newbalanceDest" required>
+
+            <button type="submit">Check Fraud</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+    <!-- Fullscreen overlay -->
+    <div class="overlay" id="overlay">Processing...</div>
+    <!-- Custom cursor -->
+    <div class="custom-cursor" id="customCursor"></div>
+    <script>
+        // Interactive custom cursor
+        const cursor = document.getElementById('customCursor');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let cursorX = mouseX, cursorY = mouseY;
+        let lastMove = Date.now();
+
+        document.addEventListener('mousemove', function(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            const speed = Math.abs(e.movementX) + Math.abs(e.movementY);
+            if (speed > 10) {
+                cursor.classList.add('active');
+            } else {
+                cursor.classList.remove('active');
+            }
+            lastMove = Date.now();
+        });
+
+        document.addEventListener('mousedown', function() {
+            cursor.classList.add('click');
+        });
+        document.addEventListener('mouseup', function() {
+            cursor.classList.remove('click');
+        });
+
+        function animateCursor() {
+            // Smoothly interpolate position
+            cursorX += (mouseX - cursorX) * 0.18;
+            cursorY += (mouseY - cursorY) * 0.18;
+            cursor.style.transform = `translate(-50%, -50%) translate(${cursorX}px, ${cursorY}px)`;
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Form submission logic
+        document.getElementById('fraudForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Show overlay and clear result
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('result').innerText = '';
+
+            // Collect form data
+            const type = document.getElementById('type').value;
+            const amount = document.getElementById('amount').value;
+            const oldbalanceOrg = document.getElementById('oldbalanceOrg').value;
+            const newbalanceOrig = document.getElementById('newbalanceOrig').value;
+            const newbalanceDest = document.getElementById('newbalanceDest').value;
+
+            // Prepare data for API
+            const data = {
+                features: [parseFloat(type), parseFloat(amount), parseFloat(oldbalanceOrg), parseFloat(newbalanceOrig), parseFloat(newbalanceDest)]
+            };
+
+            // Send POST request to the API
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            // Parse the result
+            const result = await response.json();
+
+            // Simulate 3 seconds processing time
+            setTimeout(() => {
+                document.getElementById('overlay').classList.remove('active');
+                document.getElementById('result').innerText = `Prediction: ${result.prediction}`;
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
